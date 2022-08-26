@@ -20,9 +20,9 @@ mp_face_mesh = mp.solutions.face_mesh
 
 #to modify aspect ratio
 def aspect_normalize(file):
-  im = cv2.imread(file)
-  as1 = im.shape[0]
-  as2 = im.shape[1]
+  #im = cv2.imread(file)
+  as1 = file.shape[0]
+  as2 = file.shape[1]
   return as1, as2 
 
 #DataFrame
@@ -38,15 +38,14 @@ def dataframe_create(human_num_list, position_list, x_list, y_list, z_list):
   y_list = []
   z_list = []
   
-  for i in range(df["image_num"].max()+1):
-    df_ = df[df["image_num"] == i]
-    x_ = preprocessing.minmax_scale(df_["x"].values)
+  
+  x_ = preprocessing.minmax_scale(df["x"].values)
   for k in x_:
     x_list.append(k) 
-    y_ = preprocessing.minmax_scale(df_["y"].values)
+  y_ = preprocessing.minmax_scale(df["y"].values)
   for j in y_:
     y_list.append(j)
-    z_ = preprocessing.minmax_scale(df_["z"].values)
+  z_ = preprocessing.minmax_scale(df["z"].values)
   for p in z_:
     z_list.append(p)
     
@@ -58,9 +57,9 @@ def dataframe_create(human_num_list, position_list, x_list, y_list, z_list):
   df_Y_list = []
   df_Z_list = []
 
-  df_X_ = df_["x"].T
-  df_Y_ = df_["y"].T
-  df_Z_ = df_["z"].T
+  df_X_ = df["x"].T
+  df_Y_ = df["y"].T
+  df_Z_ = df["z"].T
 
   df_X_list.append(df_X_.values)
   df_Y_list.append(df_Y_.values)
@@ -109,12 +108,14 @@ def facemesh_photo(img_file):
     #image = cv2.imread(img_file)
     results = face_mesh.process(cv2.cvtColor(img_file, cv2.COLOR_BGR2RGB))
 
-    if not results.multi_face_landmarks:
-      continue
+    
       
     annotated_image = img_file.copy()
     blank = np.array(np.zeros(annotated_image.shape))
+
+    human_num = 0
     for face_landmarks in results.multi_face_landmarks:
+      
       for i in range(len(str(face_landmarks).split('landmark'))):
         cnt=0
         if str(face_landmarks).split('landmark')[i] != "":
@@ -133,6 +134,8 @@ def facemesh_photo(img_file):
         landmark_drawing_spec=None,
         connection_drawing_spec=mp_drawing_styles
         .get_default_face_mesh_tesselation_style())
+      
+      human_num += 1
 
     df_XY = dataframe_create(human_num_list, position_list, x_list, y_list, z_list)
           
